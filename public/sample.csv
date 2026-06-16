@@ -1,0 +1,9 @@
+region,channel,units,revenue
+North,Online,120,4800
+North,Retail,75,3375
+South,Online,200,9000
+South,Retail,140,6020
+East,Online,95,3990
+East,Retail,60,2880
+West,Online,160,7200
+West,Retail,110,4730
