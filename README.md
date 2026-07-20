@@ -3,7 +3,7 @@
 A CSV-analytics demo: log in, upload a CSV, and immediately see it parsed, stored,
 and visualized in a dashboard. Same user-facing behavior as the original demo, but
 restructured into **pragmatic clean architecture** with a **real PostgreSQL** backend
-(Supabase) instead of an in-memory store.
+(Neon) instead of an in-memory store.
 
 ## Layers and the dependency rule
 
@@ -38,11 +38,16 @@ and no page changes: every consumer depends on the port, not the adapter.
 > Session/cookie handling (`app/lib/session.ts`) is framework-coupled to `next/headers`,
 > so it lives in the interface layer, not in domain/application.
 
-## Database (PostgreSQL via Supabase)
+## Database (PostgreSQL via Neon)
 
-- **App runtime** uses the Supabase **transaction pooler** (`:6543`) with postgres.js
-  `{ prepare: false }` — required, since that pooler does not support prepared statements.
-- **Migrations** use the **session pooler** (`:5432`).
+- **App runtime** uses Neon's **pooled** endpoint (the `-pooler` host) with postgres.js
+  `{ prepare: false }` — required, since that pooler runs PgBouncer in transaction mode
+  and does not support prepared statements.
+- **Migrations** use the **direct** endpoint (same host without `-pooler`), which gives a
+  session connection for DDL.
+
+Both URLs require `?sslmode=require`. Swapping providers touches only these two env vars —
+no application code changes — which is the point of the ports-and-adapters layout above.
 
 Tables: `users(id, email unique, password_hash, role)`,
 `datasets(id, user_id, owner_email, filename, columns jsonb, row_count, created_at)`,
@@ -57,7 +62,7 @@ Vercel build never hits the database at build time.
 
 ```bash
 pnpm install
-# .env.local already contains DATABASE_URL (txn pooler) + MIGRATE_DATABASE_URL (session pooler)
+# .env.local already contains DATABASE_URL (pooled endpoint) + MIGRATE_DATABASE_URL (direct endpoint)
 pnpm migrate          # apply schema + seed admin; prints the tables it finds
 pnpm dev              # http://localhost:3000
 ```
@@ -94,6 +99,6 @@ pnpm test
 
 - Next.js (App Router) + TypeScript, Tailwind CSS
 - Server Actions (login/logout/delete) + a Node.js Route Handler for CSV upload
-- PostgreSQL (Supabase) via postgres.js
+- PostgreSQL (Neon) via postgres.js
 - Clean architecture: domain / application (use-cases + ports) / infrastructure / interface
 - Playwright for behavioral acceptance tests

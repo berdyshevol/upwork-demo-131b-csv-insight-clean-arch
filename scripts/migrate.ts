@@ -1,10 +1,10 @@
 // Run the schema migration against a Postgres database.
 //
-// Use the SESSION pooler URL (port 5432) for migrations — DDL + multi-statement
-// scripts are happier there than on the transaction pooler. Set it via
-// MIGRATE_DATABASE_URL, falling back to DATABASE_URL.
+// Use Neon's DIRECT endpoint (the host WITHOUT `-pooler`) for migrations — DDL
+// and multi-statement scripts need a session connection, not the transaction
+// pooler. Set it via MIGRATE_DATABASE_URL, falling back to DATABASE_URL.
 //
-//   MIGRATE_DATABASE_URL="postgresql://...:5432/postgres" npm run migrate
+//   MIGRATE_DATABASE_URL="postgresql://…@ep-xxx.<region>.aws.neon.tech/<db>?sslmode=require" npm run migrate
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

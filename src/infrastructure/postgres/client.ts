@@ -1,9 +1,10 @@
 // postgres.js client singleton. Lives on globalThis so dev hot-reload and warm
 // serverless lambdas reuse one pool instead of leaking connections.
 //
-// IMPORTANT: the app connects through Supabase's TRANSACTION pooler (port 6543),
-// which does NOT support prepared statements — hence `{ prepare: false }`.
-// The migration script uses the SESSION pooler (5432) instead.
+// IMPORTANT: the app connects through Neon's POOLED endpoint (the `-pooler`
+// host), a PgBouncer in transaction mode, which does NOT support prepared
+// statements — hence `{ prepare: false }`. The migration script uses the
+// direct (non-pooled) endpoint instead.
 
 import postgres, { type Sql } from "postgres";
 
